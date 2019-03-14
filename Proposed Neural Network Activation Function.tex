@@ -44,14 +44,38 @@ In this paper a new activation function for deep neural networks is presented.  
 \maketitle
 
 \section{INTRODUCTION}
-The primary reason neural networks are so successful at solving problems in machine learning is their ability to create highly non-linear functions.   The feature of a neural network which makes this possible is the activation function.  The activation function takes what is otherwise a linear and makes it into a non-linear object.  It is no surprise then, that discovering new activation functions to use in neural networks is an ongoing area of research.   
+The primary reason neural networks are so successful at solving problems in machine learning is their ability to create highly non-linear functions.   The feature of a neural network which makes this possible is the activation function.  The activation function takes what is otherwise a linear object and makes it non-linear.  It is no surprise then, that discovering new activation functions to use in neural networks is an ongoing area of research.   
 
-The most popular activation function used today is the rectified linear unit (ReLU).  The most attractive property of ReLU seems to be its simplicity; the computation of this function is very fact, which simplifies and accelerates the training of neural networks. ReLU, however, is not differentiable at the origin, which has lead to the search for other activation function which are and have similar properties to ReLU.  The purpose of this paper is to present two more.    
+The most popular activation function used today is the rectified linear unit (ReLU).  The most attractive property of ReLU seems to be its simplicity; the computation of this function and its derivative is very fast, which simplifies and accelerates the training of neural networks. ReLU, however, is not differentiable at the origin, which has lead to the search for other activation function which are differentiable at the origin and have similar properties.  The purpose of this paper is to present two such activation functions.    
 
-While writing software to control servo hydraulic actuators, I was looking for a way to ramp the position of the actuator between two points.  The obvious choice is a line: $$f(x) = ax+b$$ Unfortunately, this is not differentiable, and so there are sudden changes in velocity which may damage the specimen attached to the actuator.  The standard way in the industry is to use a haversine, whose formula is given by $$f(x) = \frac{1-cos(x)}{2}$$  This function, however, is only $\mathscr{C}^1$, and sudden changes in acceleration can also be detrimental.  This lead me to consider the function $$f(x) = x - sin(x)$$  Here we have 'ramp' which is $\mathscr{C}^2$.   The third derivative is the jerk, and specimens seem to be able to tolerate discontinuities in the jerk.   See Fig. 1 for the graph of these three functions.
+The function which is the basis for the activation functions I will discuss is $$f(x) = \min(1, \max(0, x - \frac{1}{2\pi}\sin(2\pi x)))$$ In the past I have used this function to ramp a servo hydraulic actuator between points. It was chosen since it has continuous first and second derivatives and discontinuities in velocity or acceleration can damage some kinds of specimens (discontinuity in the jerk is tolerated).  A glance at the graph (fig. 1) reveals that this is a Sigmoid function and so, naturally, activation functions came to mind.   
+\begin{figure}[tb]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{xsinx.png}
+\caption{The graph of f(x) = \min(1, \max(0, x - \frac{1}{2\pi}\sin(2\pi x)))$}
+\label{Figure 1}
+\end{figure}  
 
-\includegraphics[1]{All_three.png}
-\caption{Fig. 1: Three ramp functions.}
+The goal of this paper is not to look at $x-\sin(x)$ as a replacement for the logistic function, but instead is to use $x-\sin(x)$ to create smooth versions of ReLU.   The two activation functions I will consider are shown in the Table 1.  The first is called Oscillating ReLU (OscReLU) )and the second Oscillating ReLU with Exponential Decay (DOscReLU). Both resolve the issue of non-differentiability at 0. 
+
+\begin{table}[!h]
+\renewcommand\arraystretch{1.5}
+\noindent\[
+\begin{array}{|c|c|}
+\hline
+OscReLU & \max(0, x - \frac{1}{2\pi}\sin(2\pi x)\\
+\hline
+DOscReLU & \max(0, x - \frac{1}{2\pi}e^{-sx^2}\sin(2\pi x)\\
+\hline
+\end{array}
+\]
+\end{table}
+
+This paper is organized as follows.  In section 2, the new activation functions are discussed. Section 4 contains an analysis of experimental results.  Finally a conclusion is given in section 5.  
+
+\section{OscReLU and DOscReLU}  
+
+
 
 
 
@@ -100,23 +124,7 @@ model is related to the local state probability $P(a):M_0=P(1)-P(-1)$.
 The equivalences are shown in Table~\ref{eqtable}.
 \end{quotation}
 
-\begin{table}[ht]
-\caption{}\label{eqtable}
-\renewcommand\arraystretch{1.5}
-\noindent\[
-\begin{array}{|c|c|c|}
-\hline
-&{-\infty}&{+\infty}\\
-\hline
-{f_+(x,k)}&e^{\sqrt{-1}kx}+s_{12}(k)e^{-\sqrt{-1}kx}&s_{11}(k)e^
-{\sqrt{-1}kx}\\
-\hline
-{f_-(x,k)}&s_{22}(k)e^{-\sqrt{-1}kx}&e^{-\sqrt{-1}kx}+s_{21}(k)e^{\sqrt
-{-1}kx}\\
-\hline
-\end{array}
-\]
-\end{table}
+
 
 \begin{definition}
 This is an example of a `definition' element.
@@ -142,10 +150,6 @@ For $f\in A(X)$, we define
 \end{equation}
 \end{example}
 
-\begin{xca}
-This is an example of the \texttt{xca} environment. This environment is
-used for exercises which occur within a section.
-\end{xca}
 
 The following is an example of a numbered list.
 
