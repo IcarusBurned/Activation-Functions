@@ -1,6 +1,8 @@
 \documentclass{amsart}
 
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
@@ -71,15 +73,26 @@ DOscReLU & \max(0, x - \frac{1}{2\pi}e^{-sx^2}\sin(2\pi x)\\
 \]
 \end{table}
 
-This paper is organized as follows.  In section 2, the new activation functions are discussed. Section 4 contains an analysis of experimental results.  Finally a conclusion is given in section 5.  
+This paper is organized as follows. In section 2 ReLU will be discussed. In section 3 the new activation functions are discussed. Section 4 contains an analysis of experimental results.  Finally a conclusion is given in section 5.  
+
+\section{ReLU}  
+
+RelU was introduced as an activation function as a replacement for the logistic function and tanh. Its formulas for ReLU and its derivative are given by $$f(x) = max(0, x)$$ $$f'(x) = \begin{cases}0 : x < 0 \\ 1 : x \geq 0 \end{cases}$$ The graphs of ReLU and its derivative are shown in Figure 2.  
+
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{ReLU.png}
+\caption{ReLU and its derivative}
+\label{Figure 2}
+\end{figure}  
+
+The Logistic function and tanh both have bounded range and have derivatives which asymptotically approach zero (very quickly).  This leads to a phenomena known as the Vanishing Gradient Problem.  Essentially as the gradient goes to zero at a given neuron, it will now longer contribute during back propagation. ReLU solved this problem, at least for positive inputs.
 
 \section{OscReLU and DOscReLU}  
 
+The goal of these two activation functions is to introduce a higher level of non-linearity than ReLU.  They both still have value zero for negative input values and therefore does not address the issue of zero gradient for these values.
 
 
-
-
-whose formula is given by $$f(x) = max(0,x)$$
 
 \begin{lemma}
 Let $f, g\in  A(X)$ and let $E$, $F$ be cozero
