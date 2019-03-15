@@ -51,6 +51,7 @@ The primary reason neural networks are so successful at solving problems in mach
 The most popular activation function used today is the rectified linear unit (ReLU).  The most attractive property of ReLU seems to be its simplicity; the computation of this function and its derivative is very fast, which simplifies and accelerates the training of neural networks. ReLU, however, is not differentiable at the origin, which has lead to the search for other activation function which are differentiable at the origin and have similar properties.  The purpose of this paper is to present two such activation functions.    
 
 The function which is the basis for the activation functions I will discuss is $$f(x) = \min(1, \max(0, x - \frac{1}{2\pi}\sin(2\pi x)))$$ In the past I have used this function to ramp a servo hydraulic actuator between points. It was chosen since it has continuous first and second derivatives and discontinuities in velocity or acceleration can damage some kinds of specimens (discontinuity in the jerk is tolerated).  A glance at the graph (fig. 1) reveals that this is a Sigmoid function and so, naturally, activation functions came to mind.   
+
 \begin{figure}[tb]
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{xsinx.png}
@@ -58,7 +59,7 @@ The function which is the basis for the activation functions I will discuss is $
 \label{Figure 1}
 \end{figure}  
 
-The goal of this paper is not to look at $x-\sin(x)$ as a replacement for the logistic function, but instead is to use $x-\sin(x)$ to create smooth versions of ReLU.   The two activation functions I will consider are shown in the Table 1.  The first is called Oscillating ReLU (OscReLU) )and the second Oscillating ReLU with Exponential Decay (DOscReLU). Both resolve the issue of non-differentiability at 0. 
+The goal of this paper is not to look at $x-\sin(x)$ as a replacement for the logistic function, but instead is to use $x-\sin(x)$ to create smooth versions of ReLU.   The two activation functions I will consider are shown in the Table 1 (simplest form).  The first is called Oscillating ReLU (OscReLU) )and the second Oscillating ReLU with Exponential Decay (DOscReLU). Both resolve the issue of non-differentiability at zero. 
 
 \begin{table}[!h]
 \renewcommand\arraystretch{1.5}
@@ -77,7 +78,7 @@ This paper is organized as follows. In section 2 ReLU will be discussed. In sect
 
 \section{ReLU}  
 
-RelU was introduced as an activation function as a replacement for the logistic function and tanh. Its formulas for ReLU and its derivative are given by $$f(x) = max(0, x)$$ $$f'(x) = \begin{cases}0 : x < 0 \\ 1 : x \geq 0 \end{cases}$$ The graphs of ReLU and its derivative are shown in Figure 2.  
+ReLU was introduced as a replacement for the logistic function and tanh. The formulas for ReLU and its derivative are given by $$f(x) = max(0, x)$$ $$f'(x) = \begin{cases}0 : x < 0 \\ 1 : x \geq 0 \end{cases}$$ The graph of ReLU and of its derivative are shown in Figure 2.  
 
 \begin{figure}[!h]
 %\blankbox{.75\columnwidth}{3pc}
@@ -86,187 +87,43 @@ RelU was introduced as an activation function as a replacement for the logistic 
 \label{Figure 2}
 \end{figure}  
 
-The Logistic function and tanh both have bounded range and have derivatives which asymptotically approach zero (very quickly).  This leads to a phenomena known as the Vanishing Gradient Problem.  Essentially as the gradient goes to zero at a given neuron, it will now longer contribute during back propagation. ReLU solved this problem, at least for positive inputs.
+The Logistic function and tanh both have bounded range and have derivatives which asymptotically approach zero (very quickly).  This leads to a phenomena known as the Vanishing Gradient Problem.  Essentially as the gradient goes to zero at a given neuron, it will now longer contribute during back propagation. ReLU solves this problem, at least for positive inputs.  
+
+ReLU is very simple, its use in the network, involves just a comparison, addition and multiplication.  In addition the derivative of ReLU is just a step function. These properties are to be compared with the rather complex formulas and derivative for other activation functions.  The computational simplicity and efficiency of ReLU, coupled with the fact that it works are the reasons it is so popular.   
+
+In addition to ReLU, I will be comparing the performance of OscReLU and DOscReLU to two recent state of the art activation functions: Swish \cite{A} and LiSHT \cite{B}.  
+The formulas are given by $Swish(x) = x\dotsigmoid(βx)$ and $LiSHT(x) = x \dot tanh(x)$
+
 
 \section{OscReLU and DOscReLU}  
 
-The goal of these two activation functions is to introduce a higher level of non-linearity than ReLU.  They both still have value zero for negative input values and therefore does not address the issue of zero gradient for these values.
+The goal of these two activation functions is to introduce a higher level of non-linearity than ReLU, while attempting to maintain many of the favorable properties. The most general formulas for OscReLU and DOscReLU includes parameters. 
+
+\subsection{OscReLU}
+
+OscReLU is a very simple function: 
+
+$$f(x,S,I) = \max(0, (x + S) - \frac{1}{2\pi}\sin(2\pi (x+S)) - I$$  
+$f'(x,S,I) = \begin{cases} 1 - cos(2\pi (x+S)) & x \geq -S \\ 0 & x < -S  \end{cases}$$
+
+
+In Figure 3 is a plot of OscReLU and ReLU.  
 
 
 
-\begin{lemma}
-Let $f, g\in  A(X)$ and let $E$, $F$ be cozero
-sets in $X$.
-\begin{enumerate}
-\item If $f$ is $E$-regular and $F\subseteq E$, then $f$ is $F$-regular.
 
-\item If $f$ is $E$-regular and $F$-regular, then $f$ is $E\cup
-F$-regular.
+\subsection{DOscReLU}  
 
-\item If $f(x)\ge c>0$ for all $x\in E$, then $f$ is $E$-regular.
+$DOscReLU(x,S,I,K) = \max(0, (x + S) - \frac{1}{2\pi}e^{-K(x+S)^2}\sin(2\pi (x+S)) - I$
+Here S is a horizontal shift which allows the dying gradient of the function to be shifted into the negative half plane, I is a vertical shift, called the inhibitory offset (to be explained below), and, finally, K is the decay rate of the exponential.  
 
-\end{enumerate}
-\end{lemma}
-
-The following is an example of a proof.
-
-\begin{proof} Set $j(\nu)=\max(I\backslash a(\nu))-1$. Then we have
-\[
-\sum_{i\notin a(\nu)}t_i\sim t_{j(\nu)+1}
-  =\prod^{j(\nu)}_{j=0}(t_{j+1}/t_j).
-\]
-Hence we have
-\begin{equation}
-\begin{split}
-\prod_\nu\biggl(\sum_{i\notin
-  a(\nu)}t_i\biggr)^{\abs{a(\nu-1)}-\abs{a(\nu)}}
-&\sim\prod_\nu\prod^{j(\nu)}_{j=0}
-  (t_{j+1}/t_j)^{\abs{a(\nu-1)}-\abs{a(\nu)}}\\
-&=\prod_{j\ge 0}(t_{j+1}/t_j)^{
-  \sum_{j(\nu)\ge j}(\abs{a(\nu-1)}-\abs{a(\nu)})}.
-\end{split}
-\end{equation}
-By definition, we have $a(\nu(j))\supset c(j)$. Hence, $\abs{c(j)}=n-j$
-implies (5.4). If $c(j)\notin a$, $a(\nu(j))c(j)$ and hence
-we have (5.5).
-\end{proof}
-
-\begin{quotation}
-This is an example of an `extract'. The magnetization $M_0$ of the Ising
-model is related to the local state probability $P(a):M_0=P(1)-P(-1)$.
-The equivalences are shown in Table~\ref{eqtable}.
-\end{quotation}
-
-
-
-\begin{definition}
-This is an example of a `definition' element.
-For $f\in A(X)$, we define
-\begin{equation}
-\mathcal{Z} (f)=\{E\in Z[X]: \text{$f$ is $E^c$-regular}\}.
-\end{equation}
-\end{definition}
-
-\begin{remark}
-This is an example of a `remark' element.
-For $f\in A(X)$, we define
-\begin{equation}
-\mathcal{Z} (f)=\{E\in Z[X]: \text{$f$ is $E^c$-regular}\}.
-\end{equation}
-\end{remark}
-
-\begin{example}
-This is an example of an `example' element.
-For $f\in A(X)$, we define
-\begin{equation}
-\mathcal{Z} (f)=\{E\in Z[X]: \text{$f$ is $E^c$-regular}\}.
-\end{equation}
-\end{example}
-
-
-The following is an example of a numbered list.
-
-\begin{enumerate}
-\item First item.
-In the case where in $G$ there is a sequence of subgroups
-\[
-G = G_0, G_1, G_2, \dots, G_k = e
-\]
-such that each is an invariant subgroup of $G_i$.
-
-\item Second item.
-Its action on an arbitrary element $X = \lambda^\alpha X_\alpha$ has the
-form
-\begin{equation}\label{eq:action}
-[e^\alpha X_\alpha, X] = e^\alpha \lambda^\beta
-[X_\alpha X_\beta] = e^\alpha c^\gamma_{\alpha \beta}
- \lambda^\beta X_\gamma,
-\end{equation}
-
-\begin{enumerate}
-\item First subitem.
-\[
-- 2\psi_2(e) =  c_{\alpha \gamma}^\delta c_{\beta \delta}^\gamma
-e^\alpha e^\beta.
-\]
-
-\item Second subitem.
-\begin{enumerate}
-\item First subsubitem.
-In the case where in $G$ there is a sequence of subgroups
-\[
-G = G_0, G_1, G_2, \ldots, G_k = e
-\]
-such that each subgroup $G_{i+1}$ is an invariant subgroup of $G_i$ and
-each quotient group $G_{i+1}/G_{i}$ is abelian, the group $G$ is called
-\textit{solvable}.
-
-\item Second subsubitem.
-\end{enumerate}
-\item Third subitem.
-\end{enumerate}
-\item Third item.
-\end{enumerate}
-
-Here is an example of a cite. See \cite{A}.
-
-\begin{theorem}
-This is an example of a theorem.
-\end{theorem}
-
-\begin{theorem}[Marcus Theorem]
-This is an example of a theorem with a parenthetical note in the
-heading.
-\end{theorem}
-
-
-
-\begin{figure}[tb]
-%\blankbox{.75\columnwidth}{3pc}
-\includegraphics{lion.png}
-\caption{}\label{otherfig}
-\end{figure}
-
-\section{Some more list types}
-This is an example of a bulleted list.
-
-\begin{itemize}
-\item $\mathcal{J}_g$ of dimension $3g-3$;
-\item $\mathcal{E}^2_g=\{$Pryms of double covers of $C=\openbox$ with
-normalization of $C$ hyperelliptic of genus $g-1\}$ of dimension $2g$;
-\item $\mathcal{E}^2_{1,g-1}=\{$Pryms of double covers of
-$C=\openbox^H_{P^1}$ with $H$ hyperelliptic of genus $g-2\}$ of
-dimension $2g-1$;
-\item $\mathcal{P}^2_{t,g-t}$ for $2\le t\le g/2=\{$Pryms of double
-covers of $C=\openbox^{C'}_{C''}$ with $g(C')=t-1$ and $g(C'')=g-t-1\}$
-of dimension $3g-4$.
-\end{itemize}
-
-This is an example of a `description' list.
-
-\begin{description}
-\item[Zero case] $\rho(\Phi) = \{0\}$.
-
-\item[Rational case] $\rho(\Phi) \ne \{0\}$ and $\rho(\Phi)$ is
-contained in a line through $0$ with rational slope.
-
-\item[Irrational case] $\rho(\Phi) \ne \{0\}$ and $\rho(\Phi)$ is
-contained in a line through $0$ with irrational slope.
-\end{description}
 
 \bibliographystyle{amsplain}
 \begin{thebibliography}{10}
 
-\bibitem {A} T. Aoki, \textit{Calcul exponentiel des op\'erateurs
-microdifferentiels d'ordre infini.} I, Ann. Inst. Fourier (Grenoble)
-\textbf{33} (1983), 227--250.
+\bibitem {A} S.K. Roy, S. Manna, S.R. Dubey, B. Chaudhuri, \textit{LiSHT: Non-Parametric Linearly Scaled Hyperbolic Tangent Activation Function for Neural Networks} ArXIV:1901.05894v1 (2019)
 
-\bibitem {B} R. Brown, \textit{On a conjecture of Dirichlet},
-Amer. Math. Soc., Providence, RI, 1993.
-
-\bibitem {D} R. A. DeVore, \textit{Approximation of functions},
-Proc. Sympos. Appl. Math., vol. 36,
-Amer. Math. Soc., Providence, RI, 1986, pp. 34--56.
+\bibitem {B} P. Ramachandran, B. Zoph, Q.V. Le, \textit{SEARCHING FOR ACTIVATION FUNCTIONS}, ArXIV:1710.05894v1 (2019)
 
 \end{thebibliography}
 
