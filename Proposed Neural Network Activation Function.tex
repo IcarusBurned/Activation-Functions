@@ -55,7 +55,7 @@ The function which is the basis for the activation functions I will discuss is $
 \begin{figure}[tb]
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{xsinx.png}
-\caption{The graph of f(x) = \min(1, \max(0, x - \frac{1}{2\pi}\sin(2\pi x)))$}
+\caption{The graph of $f(x) = \min(1, \max(0, x - \frac{1}{2\pi}\sin(2\pi x)))$}
 \label{Figure 1}
 \end{figure}  
 
@@ -91,31 +91,41 @@ The Logistic function and tanh both have bounded range and have derivatives whic
 
 ReLU is very simple, its use in the network, involves just a comparison, addition and multiplication.  In addition the derivative of ReLU is just a step function. These properties are to be compared with the rather complex formulas and derivative for other activation functions.  The computational simplicity and efficiency of ReLU, coupled with the fact that it works are the reasons it is so popular.   
 
-In addition to ReLU, I will be comparing the performance of OscReLU and DOscReLU to two recent state of the art activation functions: Swish \cite{A} and LiSHT \cite{B}.  
-The formulas are given by $Swish(x) = x\dotsigmoid(βx)$ and $LiSHT(x) = x \dot tanh(x)$
+In addition to ReLU, I will be comparing the performance of OscReLU and DOscReLU to two recent state of the art activation functions: Swish \cite{A} and LiSHT \cite{B}. Swish: $f(x) = x\dotsigmoid(βx)$ and LiSHT: $f(x) = x \dot tanh(x)$
 
 
 \section{OscReLU and DOscReLU}  
 
 The goal of these two activation functions is to introduce a higher level of non-linearity than ReLU, while attempting to maintain many of the favorable properties. The most general formulas for OscReLU and DOscReLU includes parameters. 
+The following functions have parameters S,I, and K, which are define as:  S is a horizontal shift which allows the dying gradient of the function to be shifted into the negative half plane, I is a vertical shift, called the inhibitory offset (to be explained below), and, finally, K is the decay rate of the exponential.  
 
-\subsection{OscReLU}
+\subsection{OscReLU}  \hfill \break 
+\hfill\break
+$f(x,S,I) = \max(0, (x + S) - \frac{1}{2\pi}\sin(2\pi (x+S)) - I$ \hfill \break
+\hfill\break
+$f'(x,S,I) = \begin{cases} 1 - cos(2\pi (x+S)) & x \geq -S \\ 0 & x < -S\end{cases}$ \hfill \break
 
-OscReLU is a very simple function: 
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{OscReLU_with_ReLU_Derive.png}
+\caption{OscReLU and its derivative with S = 0 and I = 0}
+\label{Figure 3}
+\end{figure}  
 
-$$f(x,S,I) = \max(0, (x + S) - \frac{1}{2\pi}\sin(2\pi (x+S)) - I$$  
-$f'(x,S,I) = \begin{cases} 1 - cos(2\pi (x+S)) & x \geq -S \\ 0 & x < -S  \end{cases}$$
+In Figure 3, ReLU is shown on the plot of OscReLU for comparison. As can be seen OscReLU oscillates around ReLU with flat inflection points at the integers. This is a simple with a simple derivative, like ReLU. The version shown here has both parameters set to 0, this is not the best configuration.  Also notice that this will give a sparse network like ReLU.   
 
+\subsection{DOscReLU}  \hfill \break 
+\hfill\break
+$f(x,S,I,K) = \max(0, (x + S) - \frac{1}{2\pi}e^{-K(x+S)^2}\sin(2\pi (x+S)) - I$ \hfill \break 
+\hfill\break
+$f'(x,S,I,K) = \begin{cases}\frac{1.0}{\pi}(x+S)e^{-K(x+S)^2}\sin(2\pi(x+S))-e^{-K(x+S)^2}\cos(2\pi(x+S)) + 1 & x \geq -S \\ 0 & x < -S \end{cases}$ \hfill \break 
 
-In Figure 3 is a plot of OscReLU and ReLU.  
-
-
-
-
-\subsection{DOscReLU}  
-
-$DOscReLU(x,S,I,K) = \max(0, (x + S) - \frac{1}{2\pi}e^{-K(x+S)^2}\sin(2\pi (x+S)) - I$
-Here S is a horizontal shift which allows the dying gradient of the function to be shifted into the negative half plane, I is a vertical shift, called the inhibitory offset (to be explained below), and, finally, K is the decay rate of the exponential.  
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{DOscReLU_with_ReLU_Deriv.png}
+\caption{DOscReLU and its derivative with S = 0, I = 0, and K = 1}
+\label{Figure 3}
+\end{figure}  
 
 
 \bibliographystyle{amsplain}
