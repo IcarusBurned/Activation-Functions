@@ -91,14 +91,24 @@ The Logistic function and tanh both have bounded range and have derivatives whic
 
 ReLU is very simple, its use in the network, involves just a comparison, addition and multiplication.  In addition the derivative of ReLU is just a step function. These properties are to be compared with the rather complex formulas and derivative for other activation functions.  The computational simplicity and efficiency of ReLU, coupled with the fact that it works are the reasons it is so popular.   
 
-In addition to ReLU, I will be comparing the performance of OscReLU and DOscReLU to two recent state of the art activation functions: Swish \cite{A} and LiSHT \cite{B}. Swish: $f(x) = x\dotsigmoid(βx)$ and LiSHT: $f(x) = x \dot tanh(x)$
+In addition to ReLU, I will be comparing the performance of OscReLU and DOscReLU to two recent state of the art activation functions: Swish \cite{A} and LiSHT \cite{B}. The formulas and graphs of these functions are shown below.   
 
+Swish  $f(x) = x \dot \sigmoid(βx)$ \hfill\break
+LiSHT  $f(x) = x \dot \tanh(x)$
 
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{swish_with_LiSHT.png}
+\caption{Swish and LiSHT. ReLU is plotted as well for reference}
+\label{Figure 3}
+\end{figure}  
+
+\hfill\break
 \section{OscReLU and DOscReLU}  
 
 The goal of these two activation functions is to introduce a higher level of non-linearity than ReLU, while attempting to maintain many of the favorable properties. The most general formulas for OscReLU and DOscReLU includes parameters. 
 The following functions have parameters S,I, and K, which are define as:  S is a horizontal shift which allows the dying gradient of the function to be shifted into the negative half plane, I is a vertical shift, called the inhibitory offset (to be explained below), and, finally, K is the decay rate of the exponential.  
-
+\newpage
 \subsection{OscReLU}  \hfill \break 
 \hfill\break
 $f(x,S,I) = \max(0, (x + S) - \frac{1}{2\pi}\sin(2\pi (x+S)) - I$ \hfill \break
@@ -109,10 +119,10 @@ $f'(x,S,I) = \begin{cases} 1 - cos(2\pi (x+S)) & x \geq -S \\ 0 & x < -S\end{cas
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{OscReLU_with_ReLU_Derive.png}
 \caption{OscReLU and its derivative with S = 0 and I = 0}
-\label{Figure 3}
+\label{Figure 4}
 \end{figure}  
 
-In Figure 3, ReLU is shown on the plot of OscReLU for comparison. As can be seen OscReLU oscillates around ReLU with flat inflection points at the integers. This is a simple with a simple derivative, like ReLU. The version shown here has both parameters set to 0, this is not the best configuration.  Also notice that this will give a sparse network like ReLU.   
+In Figure 4, ReLU is shown on the plot of OscReLU for comparison. As can be seen OscReLU oscillates around ReLU with flat inflection points at the integers. This is a simple with a simple derivative, like ReLU. The version shown here has both parameters set to 0, this is not the best configuration.  Also notice that this will give a sparse network like ReLU.   
 
 \subsection{DOscReLU}  \hfill \break 
 \hfill\break
@@ -124,7 +134,7 @@ $f'(x,S,I,K) = \begin{cases}\frac{1.0}{\pi}(x+S)e^{-K(x+S)^2}\sin(2\pi(x+S))-e^{
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{DOscReLU_with_ReLU_Deriv.png}
 \caption{DOscReLU and its derivative with S = 0, I = 0, and K = 1}
-\label{Figure 4}
+\label{Figure 5}
 \end{figure}  
 
 This is not a simple function and its derivative is not simple.  It is very similar to OscReLU except the oscillations around the ReLU decay to zero exponentially.   
@@ -139,7 +149,7 @@ This parameter only applies to DOscReLU and controls the rate at which the oscil
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{DecayRate.png}
 \caption{Parameter K for DOscReLU}
-\label{Figure 5}
+\label{Figure 6}
 \end{figure} 
 
 \subsubsection{Horizontal Shift S} \hfill\break  
@@ -148,26 +158,67 @@ This parameter only applies to DOscReLU and controls the rate at which the oscil
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{Shift.png}
 \caption{Parameter S near zero}
-\label{Figure 6}
+\label{Figure 7}
 \end{figure} 
 
-Consider Figure 6. We see that as x approaches zero from the right, the gradient goes to zero.  It is undesirable to have the gradient go to zero near the origin in the positive half plane. S can be used to shift the curve left so the gradient vanishes in the negative half plane.  I averaged the test accuracy of 10 trials of 15 training iterations of the network for each of 10 shift values in order to determine the best left shift.  Figure 7 shows the results.  I determined that 
-S = 0.75 for OscReLU and S = 1 for DOscReLU performed well.  The resulting activation functions are shown in Figure 8.
+Consider Figure 7. We see that as x approaches zero from the right, the gradient goes to zero.  It is undesirable to have the gradient go to zero near the origin in the positive half plane. S can be used to shift the curve left so the gradient vanishes in the negative half plane.  I averaged the test accuracy of 10 trials of 15 training iterations of the network for each of 10 shift values in order to determine the best left shift.  Figure 8 shows the results.  I determined that 
+S = 0.75 for OscReLU and S = 1 for DOscReLU performed well.  The resulting activation functions are shown in Figure 9.
 
 \begin{figure}[!h]
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{ShiftTest.png}
 \caption{Test Accuracy vs. Shift Left}
-\label{Figure 7}
+\label{Figure 8}
 \end{figure} 
 
 \begin{figure}[!h]
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{ShiftedCurves.png}
 \caption{Shifted Activation Functions}
-\label{Figure 8}
+\label{Figure 9}
 \end{figure} 
 
+\subsubsection{Inhibitory Offset I} \hfill\break   
+
+It seems that one should be careful about making biological analogies to motivate neural network design. Given that, I am going to make some biological analogies to motivate the inhibitory offset parameter.  ReLU was first introduced by Hahnloser et. al, 2000 \cite{C}.  In this paper ReLU was given biological motivations.  The zero output on the negative axis was supposed to correspond to the threshold of the action potential (negative inputs do not pass the threshold).  The unbounded slope is supposed to represent the property that connections between neurons are strengthened with increasing frequency of firing of the presynaptic neuron (the high frequency trains of action potentials cause increased density of neurotransmitter receptors on the postsynaptic neuron).  I am dubious about both of these interpretations.  There are inhibitory as well as excitatory synapses.  An example is the Neurotransmitter GABA, which plays a major role in inhibitory action in the retina.  GABA receptors cause $\text{CL}^-$ ion channels to open.  This influx of negative ions counteracts the influx of $\text{NA}^+$ and $\text{K}^+$ generated by excitatory neurotransmitters.  It seems unusual (and this may be my naivete about neural networks) to set all negative inputs to output zero.  Note that both Swish and LiSHT introduce non-zero outputs on the negative axis.  Both of these activation functions have been shown to outperform  ReLU.  I am not sure if simply allow for output on the negative axis is a good model of inhibitory synapses.  Finding a way to model inhibitory effects seems like an interesting problems.  I have introduced the parameter I to allow the curves to be shifted down and therefore allow the forwarding of negative values.  If this has not convinced the reader, then consider this.  The prefrontal cortex is known to contain neurons which act to inhibit the limbic system.  Individuals with a damaged or malfunctioning prefrontal cortex have impulse control and often engage in criminal activity including violence. fMRI scans of psychopaths have shown abnormalities and diminished activity in the cingulate cortex, a part of the prefrontal cortex.  This lack of proper signalling from the frontal cortex to the limbic through the prefrontal cortex is explanatory of the condition.  So, unless you want you neural network to act like a psychopath, it may be a good idea to introduce inhibitory action.  (I apologize for that).  I will train a couple models with I set to 0.5 and see what happens.  The two activation functions will be OscReLU(0.5,0.5) and DOscReLU(1.0,0.5,1.0). These are pictured in Figure 10.  
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{Inhib.png}
+\caption{OscReLU(0.5,0.5) and DOscReLU(1.0,0.5,1.0)}
+\label{Figure 10}
+\end{figure} 
+
+\section{Test Results}   
+
+To do initial testing of these activation functions, I choose a very simple neural network.  I found the code for this network online in an article called  "Image Classification in 10 Minutes with MNIST Dataset" \cite{D}. As you can tell by the name this is an elementary network. It is a 5 layer CNN. I ran each activation through this network 10 times for 15 iterations each.  I averaged the results to get the test performance.  The following table shows the results.  
+
+\begin{table}[!h]
+\renewcommand\arraystretch{1.5}
+\noindent\[
+\begin{array}{|c|c|c|}
+\hline
+ & Test Accuracy & Standard Error\\
+\hline
+ReLU & 0.9854 & 0.0011\\
+\hline
+OscReLU(0.5,0) & 0.9890 &  0.0010\\
+\hline
+DOscReLU(1,0,1) & 0.9893 & 0.0005\\
+\hline
+Swish & 0.9855 & 0.0007\\
+\hline 
+LiSTH & 0.9869 & 0.0009 \\
+\hline
+OscReLU(0.5,0.5) & 0.9885 & 0.0015 \\
+\hline
+\end{array}
+\]
+\end{table}
+
+OscReLU and DOscReLU slightly outperform the three other activation functions for this neural network. 
+\section{Conclusion}  
+
+These activation functions show some promise. On this small neural network they performed quite well.  My next step is to test on deeper networks and on different kinds of networks with different data sets.
 
 \bibliographystyle{amsplain}
 \begin{thebibliography}{10}
@@ -175,6 +226,10 @@ S = 0.75 for OscReLU and S = 1 for DOscReLU performed well.  The resulting activ
 \bibitem {A} S.K. Roy, S. Manna, S.R. Dubey, B. Chaudhuri, \textit{LiSHT: Non-Parametric Linearly Scaled Hyperbolic Tangent Activation Function for Neural Networks} ArXIV:1901.05894v1 (2019)
 
 \bibitem {B} P. Ramachandran, B. Zoph, Q.V. Le, \textit{SEARCHING FOR ACTIVATION FUNCTIONS}, ArXIV:1710.05894v1 (2019)
+
+\bibitem {C} R. Hahnloser et al, \textit{Digital selection and analogue amplification coexist in a cortex-inspired silicon circuit}, ArXIV:1710.05894v1 (2019)
+
+\bibitem {D} O. Yalchin, “Image Classification in 10 Minutes with MNIST Dataset.” Towards Data Science, Towards Data Science, 19 Aug. 2018, towardsdatascience.com/image-classification-in-10-minutes-with-mnist-dataset-54c35b77a38d
 
 \end{thebibliography}
 
