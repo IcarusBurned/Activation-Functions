@@ -124,8 +124,49 @@ $f'(x,S,I,K) = \begin{cases}\frac{1.0}{\pi}(x+S)e^{-K(x+S)^2}\sin(2\pi(x+S))-e^{
 %\blankbox{.75\columnwidth}{3pc}
 \includegraphics[1]{DOscReLU_with_ReLU_Deriv.png}
 \caption{DOscReLU and its derivative with S = 0, I = 0, and K = 1}
-\label{Figure 3}
+\label{Figure 4}
 \end{figure}  
+
+This is not a simple function and its derivative is not simple.  It is very similar to OscReLU except the oscillations around the ReLU decay to zero exponentially.   
+Now to discuss the parameters for these functions.  
+
+\newpage
+\subsubsection{Decay Rate K} \hfill\break  
+
+This parameter only applies to DOscReLU and controls the rate at which the oscillations of the curve around ReLU decays.  Figure 6 shows the oscillations for three values of K.  During tests I left the decay rate at 1.0.
+
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{DecayRate.png}
+\caption{Parameter K for DOscReLU}
+\label{Figure 5}
+\end{figure} 
+
+\subsubsection{Horizontal Shift S} \hfill\break  
+
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{Shift.png}
+\caption{Parameter S near zero}
+\label{Figure 6}
+\end{figure} 
+
+Consider Figure 6. We see that as x approaches zero from the right, the gradient goes to zero.  It is undesirable to have the gradient go to zero near the origin in the positive half plane. S can be used to shift the curve left so the gradient vanishes in the negative half plane.  I averaged the test accuracy of 10 trials of 15 training iterations of the network for each of 10 shift values in order to determine the best left shift.  Figure 7 shows the results.  I determined that 
+S = 0.75 for OscReLU and S = 1 for DOscReLU performed well.  The resulting activation functions are shown in Figure 8.
+
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{ShiftTest.png}
+\caption{Test Accuracy vs. Shift Left}
+\label{Figure 7}
+\end{figure} 
+
+\begin{figure}[!h]
+%\blankbox{.75\columnwidth}{3pc}
+\includegraphics[1]{ShiftedCurves.png}
+\caption{Shifted Activation Functions}
+\label{Figure 8}
+\end{figure} 
 
 
 \bibliographystyle{amsplain}
